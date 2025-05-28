@@ -2,6 +2,7 @@ package com.paradoxink.demo.controller;
 
 import com.paradoxink.demo.model.Task;
 import com.paradoxink.demo.service.TaskService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -61,5 +62,12 @@ public class MainController {
         taskService.updateTask(task);
         return "redirect:/";
     }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String adminPage() {
+        return "admin";
+    }
+
 
 }
