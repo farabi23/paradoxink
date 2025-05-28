@@ -37,7 +37,17 @@ public class TaskService {
     }
 
     public Task updateTask(Task task) {
-        return taskRepository.save(task);
+
+        Task existingTask = taskRepository.findById(task.getId())
+                .orElseThrow(() -> new RuntimeException("Task not found with ID: " + task.getId()));
+
+        existingTask.setTitle(task.getTitle());
+        existingTask.setDescription(task.getDescription());
+        existingTask.setStatus(task.getStatus());
+        existingTask.setUpdatedAt(LocalDateTime.now());
+        // Don't touch createdAt — keep original
+
+        return taskRepository.save(existingTask);
     }
 
     public void deleteTask(int id) {

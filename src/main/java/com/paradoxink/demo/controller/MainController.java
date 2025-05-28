@@ -31,15 +31,34 @@ public class MainController {
         return "createPage";
     }
 
+    //создать - create
     @PostMapping("/newTask")
     public String newTaskPage (@ModelAttribute Task task){
         taskService.createTask(task);
         return "redirect:/";
 
     }
+
+    //удалить - delete
     @PostMapping("/deleteTask")
     public String deleteTaskPage (@RequestParam("taskId") int taskId){
         taskService.deleteTask(taskId);
+        return "redirect:/";
+    }
+
+    // детальный осмотр задачи что бы изменить etc etc
+    @GetMapping("/details/{id}")
+    public String detailsPage (@PathVariable int id, Model model){
+
+        Task task = taskService.findById(id);
+        model.addAttribute("task", task);
+
+        return "details";
+    }
+    //изменить - update, edit
+    @PostMapping("/updateTask")
+    public String updateTaskPage (@ModelAttribute Task task){
+        taskService.updateTask(task);
         return "redirect:/";
     }
 
