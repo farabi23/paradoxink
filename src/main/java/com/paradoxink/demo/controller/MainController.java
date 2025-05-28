@@ -37,5 +37,10 @@ public class MainController {
         return "redirect:/";
 
     }
+    @PostMapping("/deleteTask")
+    public String deleteTaskPage (@RequestParam("taskId") int taskId){
+        taskService.deleteTask(taskId);
+        return "redirect:/";
+    }
 
 }
