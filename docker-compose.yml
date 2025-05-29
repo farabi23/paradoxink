@@ -1,0 +1,44 @@
+version: '3.9'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    ports:
+      - "3310:3306"
+    environment:
+      MYSQL_DATABASE: taskmanager_db
+      MYSQL_ROOT_PASSWORD: yourpassword
+      MYSQL_ROOT_HOST: '%'
+    command: --bind-address=0.0.0.0
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-uroot", "-pyourpassword", "-h", "localhost"]
+      interval: 35s
+      timeout: 35s
+      retries: 30
+
+  spring-app:
+    image: farabi2/paradoxink-spring-app:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/taskmanager_db?useSSL=false&allowPublicKeyRetrieval=true&connectionTimeout=30000
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: yourpassword
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+
+
+      SPRING_LIQUIBASE_URL: jdbc:mysql://mysql:3306/taskmanager_db?useSSL=false&allowPublicKeyRetrieval=true&connectionTimeout=30000
+      SPRING_LIQUIBASE_USER: root
+      SPRING_LIQUIBASE_PASSWORD: yourpassword
+      SPRING_LIQUIBASE_DEFAULT_SCHEMA: taskmanager_db
+      SPRING_LIQUIBASE_CHANGE_LOG: classpath:/db/changelog/changelog-master.xml
+      SPRING_LIQUIBASE_ENABLED: "true"
+
+
+      LOGGING_LEVEL_LIQUIBASE: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_JDBC_CORE: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_BOOT_AUTOCONFIGURE_LIQUIBASE: DEBUG
