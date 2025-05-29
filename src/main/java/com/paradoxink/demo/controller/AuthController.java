@@ -6,7 +6,9 @@ import com.paradoxink.demo.model.User;
 import com.paradoxink.demo.repo.UserRepository;
 import com.paradoxink.demo.service.CustomUserDetailsService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -53,15 +55,24 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(username, password));
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            String jwt = jwtUtil.generateToken(userDetails);
 
-            Cookie cookie = new Cookie("jwt", jwt);
-            cookie.setHttpOnly(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(24 * 60 * 60); // 1 day
-            response.addCookie(cookie);
+            String accessToken = jwtUtil.generateAccessToken(userDetails);
+            String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
-            return "redirect:/"; // ✅ This should now work
+            Cookie accessCookie = new Cookie("jwt", accessToken);
+            accessCookie.setHttpOnly(true);
+            accessCookie.setPath("/");
+            accessCookie.setMaxAge(15 * 60); // 15 minutes
+
+            Cookie refreshCookie = new Cookie("refresh", refreshToken);
+            refreshCookie.setHttpOnly(true);
+            refreshCookie.setPath("/");
+            refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
+
+            response.addCookie(accessCookie);
+            response.addCookie(refreshCookie);
+
+            return "redirect:/"; //
         } catch (AuthenticationException e) {
             redirectAttributes.addFlashAttribute("error", "Invalid login");
             return "redirect:/auth/login";
@@ -106,5 +117,47 @@ public class AuthController {
         response.addCookie(cookie);
         return "redirect:/auth/login";
     }
+
+    @PostMapping("/refresh")
+    public String refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        Cookie[] cookies = request.getCookies();
+        String refreshToken = null;
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refresh".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                }
+            }
+        }
+
+        if (refreshToken == null) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            return "redirect:/auth/login";
+        }
+
+        try {
+            String username = jwtUtil.extractUsername(refreshToken);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            if (!jwtUtil.isTokenExpired(refreshToken)) {
+                String newAccessToken = jwtUtil.generateAccessToken(userDetails);
+
+                Cookie newAccessCookie = new Cookie("jwt", newAccessToken);
+                newAccessCookie.setHttpOnly(true);
+                newAccessCookie.setPath("/");
+                newAccessCookie.setMaxAge(15 * 60);
+                response.addCookie(newAccessCookie);
+
+                return "redirect:/";
+            }
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        }
+
+        return "redirect:/auth/login";
+    }
+
 
 }

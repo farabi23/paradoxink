@@ -1,8 +1,10 @@
 package com.paradoxink.demo.controller;
 
 import com.paradoxink.demo.model.Task;
+import com.paradoxink.demo.model.User;
 import com.paradoxink.demo.service.TaskService;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +23,10 @@ public class MainController {
     @GetMapping("/")
     public String mainPage (Model model){
 
-        model.addAttribute("taskList", taskService.findAll());
+        User currentUser =
+                (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        model.addAttribute("taskList", taskService.findAllByUser(currentUser));
 
         return "main";
     }
@@ -35,7 +40,11 @@ public class MainController {
     //создать - create
     @PostMapping("/newTask")
     public String newTaskPage (@ModelAttribute Task task){
-        taskService.createTask(task);
+
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+
+        taskService.createTask(task, currentUser);
         return "redirect:/";
 
     }
@@ -43,7 +52,11 @@ public class MainController {
     //удалить - delete
     @PostMapping("/deleteTask")
     public String deleteTaskPage (@RequestParam("taskId") int taskId){
-        taskService.deleteTask(taskId);
+
+        User currentUser =
+                (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        taskService.deleteTask(taskId, currentUser);
         return "redirect:/";
     }
 
@@ -59,7 +72,10 @@ public class MainController {
     //изменить - update, edit
     @PostMapping("/updateTask")
     public String updateTaskPage (@ModelAttribute Task task){
-        taskService.updateTask(task);
+
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        taskService.updateTask(task, currentUser);
         return "redirect:/";
     }
 

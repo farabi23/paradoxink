@@ -23,6 +23,9 @@ public class Task {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
+
     public Task(){
 
     }
@@ -34,6 +37,14 @@ public class Task {
         this.status = status;
         this.createdAt = createdAt;
 
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public int getId() {

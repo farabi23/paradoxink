@@ -49,7 +49,7 @@
         <td th:text = "${#temporals.format(task.updatedAt, 'dd.MM.yyyy HH:mm')}"></td>
         <td>
             <form th:action="@{/deleteTask}" method="post" style="display:inline;">
-                <input type="hidden" name="taskId" th:value="${task.id}">
+                <input type="hidden" name="taskId" th:value="${task.getId()}">
                 <button type="submit" class="btn btn-danger">Delete</button>
             </form>
         </td>
