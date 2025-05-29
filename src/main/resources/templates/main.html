@@ -25,6 +25,18 @@
 </nav>
 
 <br>
+<div class="container">
+<form method="get" action="/">
+    <select name="status">
+        <option value="">All</option>
+        <th:block th:each="s : ${statuses}">
+            <option th:value="${s}" th:text="${s}" th:selected="${selectedStatus == s.name()}"></option>
+        </th:block>
+    </select>
+    <button type="submit">Filter</button>
+</form>
+</div>
+<br>
 
 <div class="container">
 <table class="table">

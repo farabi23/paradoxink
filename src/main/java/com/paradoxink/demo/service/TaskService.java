@@ -73,6 +73,10 @@ public class TaskService {
     }
 
 
+    public List<Task> getTasksByStatus(User user, TaskStatus status) {
+        return taskRepository.findByUserAndStatus(user, status);
+    }
+
 
 
 }

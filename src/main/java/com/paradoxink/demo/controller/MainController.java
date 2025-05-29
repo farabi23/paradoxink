@@ -1,5 +1,6 @@
 package com.paradoxink.demo.controller;
 
+import com.paradoxink.demo.enums.TaskStatus;
 import com.paradoxink.demo.model.Task;
 import com.paradoxink.demo.model.User;
 import com.paradoxink.demo.service.TaskService;
@@ -21,13 +22,17 @@ public class MainController {
     }
 
     @GetMapping("/")
-    public String mainPage (Model model){
+    public String mainPage(@RequestParam(required = false) TaskStatus status, Model model) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        User currentUser =
-                (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (status != null) {
+            model.addAttribute("taskList", taskService.getTasksByStatus(currentUser, status));
+            model.addAttribute("selectedStatus", status.name());
+        } else {
+            model.addAttribute("taskList", taskService.findAllByUser(currentUser));
+        }
 
-        model.addAttribute("taskList", taskService.findAllByUser(currentUser));
-
+        model.addAttribute("statuses", TaskStatus.values());
         return "main";
     }
 
